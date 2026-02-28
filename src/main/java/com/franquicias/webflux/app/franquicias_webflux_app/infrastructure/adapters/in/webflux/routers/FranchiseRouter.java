@@ -14,6 +14,7 @@ public class FranchiseRouter {
     public RouterFunction<ServerResponse> franchiseRoutes(FranchiseHandler handler) {
         return RouterFunctions.route()
                 .POST("/api/v1/franchises", handler::createFranchise)
+                .GET("/api/v1/franchises/{id}/max-stock", handler::getMaxStockProducts)
                 .build();
     }
 }

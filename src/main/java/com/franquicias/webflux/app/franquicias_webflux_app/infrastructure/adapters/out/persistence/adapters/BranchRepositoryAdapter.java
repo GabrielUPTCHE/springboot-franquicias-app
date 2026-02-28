@@ -8,6 +8,7 @@ import com.franquicias.webflux.app.franquicias_webflux_app.domain.models.Branch;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.entities.BranchDocument;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.repositories.BranchReactiveMongoRepository;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -39,6 +40,15 @@ public class BranchRepositoryAdapter implements BranchRepositoryPort {
                         .id(finded.getId())
                         .name(finded.getName())
                         .franchiseId(finded.getFranchiseId())
+                        .build());
+    }
+    @Override
+    public Flux<Branch> findByFranchiseId(String franchiseId) {
+        return repository.findByFranchiseId(franchiseId)
+                .map(doc -> Branch.builder()
+                        .id(doc.getId())
+                        .name(doc.getName())
+                        .franchiseId(doc.getFranchiseId())
                         .build());
     }
 }
