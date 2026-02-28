@@ -20,7 +20,7 @@ public class BranchService implements CreateBranchUseCase {
     private final FranchiseRepositoryPort franchiseRepositoryPort;
 
     @Override
-    public Mono<Branch> execute(CreateBranchCommand command) {
+    public Mono<Branch> createBranch(CreateBranchCommand command) {
         return franchiseRepositoryPort.findById(command.franchiseId())
                 // Si el Mono está vacío, lanzamos la excepción de dominio
                 .switchIfEmpty(Mono.error(new FranchiseNotFoundException(command.franchiseId())))

@@ -6,5 +6,5 @@ import com.franquicias.webflux.app.franquicias_webflux_app.domain.models.Branch;
 import reactor.core.publisher.Mono;
 
 public interface CreateBranchUseCase {
-    Mono<Branch> execute(CreateBranchCommand command);
+    Mono<Branch> createBranch(CreateBranchCommand command);
 }
