@@ -22,7 +22,7 @@ public class BranchHandler {
     public Mono<ServerResponse> createBranch(ServerRequest request) {
         return request.bodyToMono(CreateBranchCommand.class)
                 .doOnNext(requestValidator::validate)
-                .flatMap(createBranchUseCase::execute)
+                .flatMap(createBranchUseCase::createBranch)
                 .flatMap(branch -> ServerResponse.status(HttpStatus.CREATED).bodyValue(branch));
     }
 }

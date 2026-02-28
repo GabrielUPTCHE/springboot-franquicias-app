@@ -41,7 +41,7 @@ class BranchServiceTest {
         when(branchRepositoryPort.save(any(Branch.class))).thenReturn(Mono.just(expectedBranch));
 
         // Act & Assert
-        StepVerifier.create(branchService.execute(command))
+        StepVerifier.create(branchService.createBranch(command))
                 .expectNextMatches(branch -> branch.getId().equals("branch-1") && branch.getName().equals("Sucursal Norte"))
                 .verifyComplete();
     }
@@ -54,7 +54,7 @@ class BranchServiceTest {
         when(franchiseRepositoryPort.findById("invalid-id")).thenReturn(Mono.empty()); // Franquicia no existe
 
         // Act & Assert
-        StepVerifier.create(branchService.execute(command))
+        StepVerifier.create(branchService.createBranch(command))
                 .expectErrorMatches(throwable -> throwable instanceof FranchiseNotFoundException &&
                         throwable.getMessage().contains("invalid-id"))
                 .verify();

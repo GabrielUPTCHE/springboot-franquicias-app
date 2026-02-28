@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public class BranchPersistenceAdapter implements BranchRepositoryPort {
+public class BranchRepositoryAdapter implements BranchRepositoryPort {
 
     private final BranchReactiveMongoRepository repository;
 
@@ -29,6 +29,16 @@ public class BranchPersistenceAdapter implements BranchRepositoryPort {
                         .id(saved.getId())
                         .name(saved.getName())
                         .franchiseId(saved.getFranchiseId())
+                        .build());
+    }
+
+    @Override
+    public Mono<Branch> findById(String id) {
+        return repository.findById(id)
+                .map(finded -> Branch.builder()
+                        .id(finded.getId())
+                        .name(finded.getName())
+                        .franchiseId(finded.getFranchiseId())
                         .build());
     }
 }
