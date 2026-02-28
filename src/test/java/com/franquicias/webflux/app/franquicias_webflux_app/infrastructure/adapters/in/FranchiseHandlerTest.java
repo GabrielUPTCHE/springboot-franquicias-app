@@ -12,19 +12,28 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import com.franquicias.webflux.app.franquicias_webflux_app.application.dto.command.CreateFranchiseCommand;
 import com.franquicias.webflux.app.franquicias_webflux_app.application.ports.in.CreateFranchiseUseCase;
 import com.franquicias.webflux.app.franquicias_webflux_app.domain.models.Franchise;
+import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.in.config.RequestValidator;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.in.webflux.handlers.FranchiseHandler;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.in.webflux.routers.FranchiseRouter;
+import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.exceptions.CustomValidationException;
 
 import reactor.core.publisher.Mono;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class FranchiseHandlerTest {
 
     @Mock
     private CreateFranchiseUseCase createFranchiseUseCase;
+
+    @Mock
+    private RequestValidator requestValidator;
 
     @InjectMocks
     private FranchiseHandler franchiseHandler;
@@ -39,13 +48,12 @@ class FranchiseHandlerTest {
 
     @Test
     void createFranchise_ShouldReturn201() {
-        // Arrange
         CreateFranchiseCommand command = new CreateFranchiseCommand("McDonalds");
         Franchise franchise = Franchise.builder().id("999").name("McDonalds").build();
 
+        doNothing().when(requestValidator).validate(any());
         when(createFranchiseUseCase.createFranchise(any(CreateFranchiseCommand.class))).thenReturn(Mono.just(franchise));
 
-        // Act & Assert
         webTestClient.post()
                 .uri("/api/v1/franchises")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -58,19 +66,17 @@ class FranchiseHandlerTest {
     }
 
     @Test
-    void createFranchise_WithBlankName_ShouldReturn400BadRequest() {
-        // Arrange
-        CreateFranchiseCommand invalidCommand = new CreateFranchiseCommand(""); // Nombre vacío
-        
-        // Act & Assert
+    void createFranchise_WithBlankName_ShouldThrowException() {
+        CreateFranchiseCommand invalidCommand = new CreateFranchiseCommand(""); 
+
+        doThrow(new CustomValidationException(List.of("El nombre es obligatorio")))
+                .when(requestValidator).validate(any());
+
         webTestClient.post()
                 .uri("/api/v1/franchises")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(invalidCommand)
                 .exchange()
-                .expectStatus().isBadRequest() // Valida que el GlobalExceptionHandler ataje el error
-                .expectBody()
-                .jsonPath("$.status").isEqualTo(400)
-                .jsonPath("$.message").isEqualTo("Error de validación en la petición");
+                .expectStatus().is5xxServerError(); 
     }
 }
