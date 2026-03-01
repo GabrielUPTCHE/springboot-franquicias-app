@@ -6,6 +6,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.franquicias.webflux.app.franquicias_webflux_app.application.dto.command.CreateFranchiseCommand;
+import com.franquicias.webflux.app.franquicias_webflux_app.application.dto.command.UpdateNameCommand;
 import com.franquicias.webflux.app.franquicias_webflux_app.application.ports.out.FranchiseRepositoryPort;
 import com.franquicias.webflux.app.franquicias_webflux_app.domain.models.Franchise;
 
@@ -33,6 +34,20 @@ class FranchiseServiceTest {
                 .expectNextMatches(franchise -> 
                         franchise.getId().equals("123") && 
                         franchise.getName().equals("Starbucks"))
+                .verifyComplete();
+    }
+
+    @Test
+    void execute_UpdateName_ShouldReturnUpdatedFranchise() {
+        UpdateNameCommand command = new UpdateNameCommand("f1", "KFC Global");
+        Franchise existingFranchise = Franchise.builder().id("f1").name("KFC").build();
+        Franchise savedFranchise = Franchise.builder().id("f1").name("KFC Global").build();
+
+        when(repositoryPort.findById("f1")).thenReturn(Mono.just(existingFranchise));
+        when(repositoryPort.save(any(Franchise.class))).thenReturn(Mono.just(savedFranchise));
+
+        StepVerifier.create(franchiseService.updateFranchiseName(command))
+                .expectNextMatches(f -> f.getName().equals("KFC Global"))
                 .verifyComplete();
     }
 }

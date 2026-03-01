@@ -50,4 +50,14 @@ public class ProductPersistenceAdapter implements ProductRepositoryPort {
     public Mono<Void> deleteById(String id) {
         return repository.deleteById(id);
     }
+    @Override
+    public Mono<Product> findTopByBranchIdOrderByStockDesc(String branchId) {
+        return repository.findFirstByBranchIdOrderByStockDesc(branchId)
+                .map(doc -> Product.builder()
+                        .id(doc.getId())
+                        .name(doc.getName())
+                        .stock(new Stock(doc.getStock()))
+                        .branchId(doc.getBranchId())
+                        .build());
+    }
 }

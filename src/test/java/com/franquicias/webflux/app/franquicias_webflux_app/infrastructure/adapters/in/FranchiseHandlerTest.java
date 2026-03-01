@@ -10,7 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import com.franquicias.webflux.app.franquicias_webflux_app.application.dto.command.CreateFranchiseCommand;
+import com.franquicias.webflux.app.franquicias_webflux_app.application.dto.command.UpdateNameCommand;
 import com.franquicias.webflux.app.franquicias_webflux_app.application.ports.in.CreateFranchiseUseCase;
+import com.franquicias.webflux.app.franquicias_webflux_app.application.ports.in.UpdateFranchiseNameUseCase;
 import com.franquicias.webflux.app.franquicias_webflux_app.domain.models.Franchise;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.in.config.RequestValidator;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.in.webflux.handlers.FranchiseHandler;
@@ -31,6 +33,8 @@ class FranchiseHandlerTest {
 
     @Mock
     private CreateFranchiseUseCase createFranchiseUseCase;
+    @Mock
+    private UpdateFranchiseNameUseCase updateFranchiseNameUseCase ;
 
     @Mock
     private RequestValidator requestValidator;
@@ -78,5 +82,23 @@ class FranchiseHandlerTest {
                 .bodyValue(invalidCommand)
                 .exchange()
                 .expectStatus().is5xxServerError(); 
+    }
+
+    @Test
+    void updateFranchiseName_ShouldReturn200() {
+        UpdateNameCommand command = new UpdateNameCommand("f1", "KFC Global");
+        Franchise updatedFranchise = Franchise.builder().id("f1").name("KFC Global").build();
+
+        doNothing().when(requestValidator).validate(any());
+        when(updateFranchiseNameUseCase.updateFranchiseName(any(UpdateNameCommand.class))).thenReturn(Mono.just(updatedFranchise));
+
+        webTestClient.patch()
+                .uri("/api/v1/franchises/f1/name")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(new UpdateNameCommand(null, "KFC Global")) // El handler inyecta el ID
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.name").isEqualTo("KFC Global");
     }
 }

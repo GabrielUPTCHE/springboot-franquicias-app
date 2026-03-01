@@ -7,9 +7,11 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 import com.franquicias.webflux.app.franquicias_webflux_app.application.dto.command.CreateProductCommand;
+import com.franquicias.webflux.app.franquicias_webflux_app.application.dto.command.UpdateNameCommand;
 import com.franquicias.webflux.app.franquicias_webflux_app.application.dto.command.UpdateProductStockCommand;
 import com.franquicias.webflux.app.franquicias_webflux_app.application.ports.in.CreateProductUseCase;
 import com.franquicias.webflux.app.franquicias_webflux_app.application.ports.in.DeleteProductUseCase;
+import com.franquicias.webflux.app.franquicias_webflux_app.application.ports.in.UpdateProductNameUseCase;
 import com.franquicias.webflux.app.franquicias_webflux_app.application.ports.in.UpdateProductStockUseCase;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.in.config.RequestValidator;
 
@@ -23,6 +25,7 @@ public class ProductHandler {
     private final RequestValidator requestValidator;
     private final DeleteProductUseCase deleteProductUseCase;
     private final UpdateProductStockUseCase updateProductStockUseCase;
+    private final UpdateProductNameUseCase updateProductNameUseCase;
 
     public Mono<ServerResponse> createProduct(ServerRequest request) {
         return request.bodyToMono(CreateProductCommand.class)
@@ -45,5 +48,14 @@ public class ProductHandler {
                 .doOnNext(requestValidator::validate)
                 .flatMap(updateProductStockUseCase::updateProduct)
                 .flatMap(product -> ServerResponse.ok().bodyValue(product)); // 200 OK
+    }
+
+    public Mono<ServerResponse> updateProductName(ServerRequest request) {
+        String id = request.pathVariable("id");
+        return request.bodyToMono(UpdateNameCommand.class)
+                .map(body -> new UpdateNameCommand(id, body.name()))
+                .doOnNext(requestValidator::validate)
+                .flatMap(updateProductNameUseCase::updateProductName)
+                .flatMap(product -> ServerResponse.ok().bodyValue(product));
     }
 }

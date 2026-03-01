@@ -15,6 +15,7 @@ public class BranchRouter {
     public RouterFunction<ServerResponse> branchRoutes(BranchHandler handler) {
         return RouterFunctions.route()
                 .POST("/api/v1/branches", handler::createBranch)
+                .PATCH("/api/v1/branches/{id}/name", handler::updateBranchName)
                 .build();
     }
 }
