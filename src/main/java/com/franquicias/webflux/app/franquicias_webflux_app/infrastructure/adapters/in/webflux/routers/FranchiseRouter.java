@@ -15,6 +15,7 @@ public class FranchiseRouter {
         return RouterFunctions.route()
                 .POST("/api/v1/franchises", handler::createFranchise)
                 .GET("/api/v1/franchises/{id}/max-stock", handler::getMaxStockProducts)
+                .PATCH("/api/v1/franchises/{id}/name", handler::updateFranchiseName)
                 .build();
     }
 }

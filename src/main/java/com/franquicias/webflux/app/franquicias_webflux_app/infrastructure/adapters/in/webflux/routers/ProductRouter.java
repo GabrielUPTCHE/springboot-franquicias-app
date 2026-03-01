@@ -17,6 +17,7 @@ public class ProductRouter {
                 .POST("/api/v1/products", handler::createProduct)
                 .DELETE("/api/v1/products/{id}", handler::deleteProduct)
                 .PATCH("/api/v1/products/{id}/stock", handler::updateProductStock)
+                .PATCH("/api/v1/products/{id}/name", handler::updateProductName)
                 .build();
     }
 
