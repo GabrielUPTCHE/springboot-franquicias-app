@@ -31,6 +31,7 @@ public class BranchHandler {
 
     public Mono<ServerResponse> updateBranchName(ServerRequest request) {
         String id = request.pathVariable("id");
+
         return request.bodyToMono(UpdateNameCommand.class)
                 .map(body -> new UpdateNameCommand(id, body.name()))
                 .doOnNext(requestValidator::validate)
