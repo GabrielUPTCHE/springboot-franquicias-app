@@ -11,6 +11,8 @@ import com.franquicias.webflux.app.franquicias_webflux_app.domain.models.Franchi
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -24,10 +26,14 @@ public class FranchiseService implements CreateFranchiseUseCase, UpdateFranchise
     @Override
     public Mono<Franchise> createFranchise(CreateFranchiseCommand command) {
         return Mono.just(command)
-                .map(cmd -> Franchise.builder().name(cmd.name()).build())
+                .map(cmd ->{
+                                String newId = UUID.randomUUID().toString();
+                                return new Franchise(newId, cmd.name());
+                        }
+                    )
                 .flatMap(repositoryPort::save)
                 .doOnSuccess(franchise -> log.info("Franquicia '{}' creada exitosamente con ID: {}", 
-                        franchise.getName(), franchise.getId()))
+                        franchise.name(), franchise.id()))
                 .doOnError(error -> log.error("Fallo al crear la franquicia '{}'. Motivo: {}", 
                         command.name(), error.getMessage()));
     }
@@ -37,12 +43,11 @@ public class FranchiseService implements CreateFranchiseUseCase, UpdateFranchise
         return repositoryPort.findById(command.id())
                 .switchIfEmpty(Mono.error(new FranchiseNotFoundException(command.id())))
                 .map(franchise -> {
-                    franchise.setName(command.name());
-                    return franchise;
+                    return new Franchise(franchise.id(), command.name());
                 })
                 .flatMap(repositoryPort::save)
                 .doOnSuccess(franchise -> log.info("Franquicia '{}' se actualizo su nombre exitosamente con ID: {}", 
-                        franchise.getName(), franchise.getId()))
+                        franchise.name(), franchise.id()))
                 .doOnError(error -> log.error("Fallo al actualizar el nombre de la franquicia '{}'. Motivo: {}", 
                         command.name(), error.getMessage()));
     }

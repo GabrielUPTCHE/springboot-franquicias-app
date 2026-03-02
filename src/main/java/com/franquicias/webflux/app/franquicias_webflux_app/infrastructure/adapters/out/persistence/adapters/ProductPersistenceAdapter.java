@@ -7,6 +7,7 @@ import com.franquicias.webflux.app.franquicias_webflux_app.application.ports.out
 import com.franquicias.webflux.app.franquicias_webflux_app.domain.models.Product;
 import com.franquicias.webflux.app.franquicias_webflux_app.domain.valueobjects.Stock;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.entities.ProductDocument;
+import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.mappers.ProductMapper;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.repositories.ProductReactiveMongoRepository;
 
 import reactor.core.publisher.Mono;
@@ -19,31 +20,16 @@ public class ProductPersistenceAdapter implements ProductRepositoryPort {
 
     @Override
     public Mono<Product> save(Product product) {
-        ProductDocument document = ProductDocument.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .stock(product.getStock().value()) // Extraemos el valor del VO
-                .branchId(product.getBranchId())
-                .build();
+        ProductDocument document = ProductMapper.toEntity(product);
 
         return repository.save(document)
-                .map(saved -> Product.builder()
-                        .id(saved.getId())
-                        .name(saved.getName())
-                        .stock(new Stock(saved.getStock())) // Reconstruimos el VO
-                        .branchId(saved.getBranchId())
-                        .build());
+                .map(saved -> ProductMapper.toDomain(document));
     }
 
     @Override
     public Mono<Product> findById(String id) {
         return repository.findById(id)
-                .map(doc -> Product.builder()
-                        .id(doc.getId())
-                        .name(doc.getName())
-                        .stock(new Stock(doc.getStock()))
-                        .branchId(doc.getBranchId())
-                        .build());
+                .map(doc -> ProductMapper.toDomain(doc));
     }
 
     @Override
@@ -53,11 +39,6 @@ public class ProductPersistenceAdapter implements ProductRepositoryPort {
     @Override
     public Mono<Product> findTopByBranchIdOrderByStockDesc(String branchId) {
         return repository.findFirstByBranchIdOrderByStockDesc(branchId)
-                .map(doc -> Product.builder()
-                        .id(doc.getId())
-                        .name(doc.getName())
-                        .stock(new Stock(doc.getStock()))
-                        .branchId(doc.getBranchId())
-                        .build());
+                .map(doc -> ProductMapper.toDomain(doc));
     }
 }

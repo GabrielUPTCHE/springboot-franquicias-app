@@ -57,7 +57,7 @@ class ProductHandlerTest {
     @Test
     void updateProductStock_ShouldReturn200() {
         UpdateProductStockCommand command = new UpdateProductStockCommand("prod-1", 100);
-        Product updatedProduct = Product.builder().id("prod-1").stock(new Stock(100)).build();
+        Product updatedProduct = new Product("prod-1", null, new Stock(100), null);
 
         doNothing().when(requestValidator).validate(any());
         when(updateProductStockUseCase.updateProduct(any(UpdateProductStockCommand.class))).thenReturn(Mono.just(updatedProduct));
