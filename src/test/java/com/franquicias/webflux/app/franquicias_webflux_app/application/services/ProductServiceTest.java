@@ -36,8 +36,8 @@ class ProductServiceTest {
     void execute_ShouldCreateProduct_WhenBranchExists() {
         // Arrange
         CreateProductCommand command = new CreateProductCommand("Camiseta", 50, "branch-1");
-        Branch existingBranch = Branch.builder().id("branch-1").name("Sucursal Centro").franchiseId("fran-1").build();
-        Product expectedProduct = Product.builder().id("prod-1").name("Camiseta").stock(new Stock(50)).branchId("branch-1").build();
+        Branch existingBranch = new Branch("branch-1", "Sucursal Centro", "fran-1");
+        Product expectedProduct = new Product("prod-1","Camiseta", new Stock(50), "branch-1");
 
         when(branchRepositoryPort.findById("branch-1")).thenReturn(Mono.just(existingBranch));
         when(productRepositoryPort.save(any(Product.class))).thenReturn(Mono.just(expectedProduct));
@@ -45,8 +45,8 @@ class ProductServiceTest {
         // Act & Assert
         StepVerifier.create(productService.createProduct(command))
                 .expectNextMatches(product -> 
-                        product.getId().equals("prod-1") && 
-                        product.getStock().value().equals(50))
+                        product.id().equals("prod-1") && 
+                        product.stock().value().equals(50))
                 .verifyComplete();
     }
 
@@ -66,7 +66,7 @@ class ProductServiceTest {
 
     @Test
     void deleteProduct_ShouldComplete_WhenProductExists() {
-        Product existingProduct = Product.builder().id("prod-1").build();
+        Product existingProduct = new Product("prod-1",null, null, null);
         when(productRepositoryPort.findById("prod-1")).thenReturn(Mono.just(existingProduct));
         when(productRepositoryPort.deleteById("prod-1")).thenReturn(Mono.empty());
 
@@ -77,14 +77,14 @@ class ProductServiceTest {
     @Test
     void updateStock_ShouldUpdateAndReturnProduct_WhenProductExists() {
         UpdateProductStockCommand command = new UpdateProductStockCommand("prod-1", 100);
-        Product existingProduct = Product.builder().id("prod-1").stock(new Stock(10)).build();
-        Product savedProduct = Product.builder().id("prod-1").stock(new Stock(100)).build();
+        Product existingProduct = new Product("prod-1",null, new Stock(10), null);
+        Product savedProduct = new Product("prod-1", null, new Stock(100), null);
 
         when(productRepositoryPort.findById("prod-1")).thenReturn(Mono.just(existingProduct));
         when(productRepositoryPort.save(any(Product.class))).thenReturn(Mono.just(savedProduct));
 
         StepVerifier.create(productService.updateProduct(command))
-                .expectNextMatches(product -> product.getStock().value().equals(100))
+                .expectNextMatches(product -> product.stock().value().equals(100))
                 .verifyComplete();
     }
 }

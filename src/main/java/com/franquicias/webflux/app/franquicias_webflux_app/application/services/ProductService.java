@@ -3,6 +3,8 @@ package com.franquicias.webflux.app.franquicias_webflux_app.application.services
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 
 import com.franquicias.webflux.app.franquicias_webflux_app.application.dto.command.CreateProductCommand;
@@ -33,14 +35,15 @@ public class ProductService implements CreateProductUseCase, DeleteProductUseCas
     public Mono<Product> createProduct(CreateProductCommand command) {
         return branchRepositoryPort.findById(command.branchId())
                 .switchIfEmpty(Mono.error(new BranchNotFoundException(command.branchId())))
-                .map(branch -> Product.builder()
-                        .name(command.name())
-                        .stock(new Stock(command.stock()))
-                        .branchId(branch.getId())
-                        .build())
+                .map(branch -> 
+                        {
+                                String newId = UUID.randomUUID().toString();
+                                return new Product(newId, command.name(), new Stock(command.stock()), branch.id().toString());
+                        }
+                )
                 .flatMap(productRepositoryPort::save)
                 .doOnSuccess(product -> log.info("Producto '{}' creada exitosamente con ID: {}", 
-                        product.getName(), product.getId()))
+                        product.name(), product.id()))
                 .doOnError(error -> log.error("Fallo al crear la Sucursal '{}'. Motivo: {}", 
                         command.name(), error.getMessage()));
     }
@@ -49,7 +52,7 @@ public class ProductService implements CreateProductUseCase, DeleteProductUseCas
     public Mono<Void> deleteProduct(String productId) {
         return productRepositoryPort.findById(productId)
                 .switchIfEmpty(Mono.error(new ProductNotFoundException(productId)))
-                .flatMap(product -> productRepositoryPort.deleteById(product.getId()))
+                .flatMap(product -> productRepositoryPort.deleteById(product.id()))
                 .doOnSuccess(product -> log.info("Producto eliminada exitosamente con ID: {}", 
                         productId))
                 .doOnError(error -> log.error("Fallo al eliminar el producto '{}'. Motivo: {}", 
@@ -61,12 +64,11 @@ public class ProductService implements CreateProductUseCase, DeleteProductUseCas
         return productRepositoryPort.findById(command.productId())
                 .switchIfEmpty(Mono.error(new ProductNotFoundException(command.productId())))
                 .map(product -> {
-                    product.setStock(new Stock(command.newStock())); // Re-asignamos el VO validado
-                    return product;
+                    return new Product(product.id(), product.name(), new Stock(command.newStock()), product.branchId());
                 })
                 .flatMap(productRepositoryPort::save)
                 .doOnSuccess(product -> log.info("Stock de producto '{}' actualizado exitosamente con ID: {}", 
-                        product.getName(), product.getId()))
+                        product.name(), product.id()))
                 .doOnError(error -> log.error("Fallo al actualizar el producto '{}'. Motivo: {}", 
                         command.productId(), error.getMessage()));
     }
@@ -76,11 +78,10 @@ public class ProductService implements CreateProductUseCase, DeleteProductUseCas
         return productRepositoryPort.findById(command.id())
                 .switchIfEmpty(Mono.error(new ProductNotFoundException(command.id())))
                 .map(product -> {
-                    product.setName(command.name());
-                    return product;
+                    return new Product(product.id(), command.name(), product.stock(), product.branchId());
                 })
                 .doOnSuccess(product -> log.info("Nombre de producto '{}' actualizado exitosamente con ID: {}", 
-                        product.getName(), product.getId()))
+                        product.name(), product.id()))
                 .doOnError(error -> log.error("Fallo al actualizar el producto '{}'. Motivo: {}", 
                         command.name(), error.getMessage()))
                 .flatMap(productRepositoryPort::save);

@@ -27,7 +27,7 @@ class FranchisePersistenceAdapterTest {
 
     @Test
     void save_ShouldMapAndReturnDomainModel() {
-        Franchise domainModel = Franchise.builder().name("KFC").build();
+        Franchise domainModel = new Franchise(null,"KFC");
         FranchiseDocument savedDocument = FranchiseDocument.builder().id("1").name("KFC").build();
 
         when(repository.save(any(FranchiseDocument.class))).thenReturn(Mono.just(savedDocument));
@@ -35,8 +35,8 @@ class FranchisePersistenceAdapterTest {
         // Act & Assert
         StepVerifier.create(adapter.save(domainModel))
                 .expectNextMatches(saved -> 
-                        saved.getId().equals("1") && 
-                        saved.getName().equals("KFC"))
+                        saved.id().equals("1") && 
+                        saved.name().equals("KFC"))
                 .verifyComplete();
     }
 }

@@ -33,11 +33,11 @@ class FranchiseReportServiceTest {
     @Test
     void execute_ShouldReturnMaxStockProducts_WhenFranchiseExists() {
         // Arrange
-        Franchise franchise = Franchise.builder().id("f1").name("KFC").build();
-        Branch branch1 = Branch.builder().id("b1").name("KFC Centro").franchiseId("f1").build();
-        Branch branch2 = Branch.builder().id("b2").name("KFC Norte").franchiseId("f1").build();
-        Product product1 = Product.builder().id("p1").name("Pollo").stock(new Stock(100)).branchId("b1").build();
-        Product product2 = Product.builder().id("p2").name("Papas").stock(new Stock(50)).branchId("b2").build();
+        Franchise franchise =  new Franchise("f1", "KFC");
+        Branch branch1 =new Branch("b1", "KFC Centro", "f1");
+        Branch branch2 = new Branch ("b2","KFC Norte", "f1");
+        Product product1 =new Product("p1", "Pollo", new Stock(100), "b1");
+        Product product2 = new Product("p2", "Papas", new Stock(50), "b2");
 
         when(franchiseRepositoryPort.findById("f1")).thenReturn(Mono.just(franchise));
         when(branchRepositoryPort.findByFranchiseId("f1")).thenReturn(Flux.just(branch1, branch2));
