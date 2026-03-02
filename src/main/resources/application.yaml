@@ -5,7 +5,7 @@ spring:
   application:
     name: franchise-api
   mongodb:
-    uri: mongodb://localhost:27017/franchise_db
+    uri: mongodb+srv://admin_franquicias:SuperSecretPassword123@franquiciascluster.jdlb44h.mongodb.net/franquicias_db?retryWrites=true&w=majority
   data:
     mongodb:
       auto-index-creation: true
