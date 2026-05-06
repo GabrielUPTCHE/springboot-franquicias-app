@@ -8,7 +8,11 @@ public class CustomValidationException extends RuntimeException {
     private final List<String> errors;
 
     public CustomValidationException(List<String> errors) {
-        super("Error de validación en la petición");
+        super(String.join(", ", errors));
         this.errors = errors;
+    }
+
+    public List<String> getErrors() {
+        return errors;
     }
 }
