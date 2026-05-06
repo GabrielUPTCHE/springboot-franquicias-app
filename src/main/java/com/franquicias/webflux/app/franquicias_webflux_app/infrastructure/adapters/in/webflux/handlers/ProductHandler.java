@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.franquicias.webflux.app.franquicias_webflux_app.application.dto.command.CreateProductCommand;
 import com.franquicias.webflux.app.franquicias_webflux_app.application.dto.command.UpdateNameCommand;
@@ -29,7 +30,8 @@ public class ProductHandler {
 
     public Mono<ServerResponse> createProduct(ServerRequest request) {
         return request.bodyToMono(CreateProductCommand.class)
-                .doOnNext(requestValidator::validate)
+                .switchIfEmpty(Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cuerpo de la petición no puede estar vacío")))
+                .flatMap(requestValidator::validate)
                 .flatMap(createProductUseCase::createProduct)
                 .flatMap(product -> ServerResponse.status(HttpStatus.CREATED).bodyValue(product));
     }
@@ -44,8 +46,9 @@ public class ProductHandler {
         String productId = request.pathVariable("id");
         
         return request.bodyToMono(UpdateProductStockCommand.class)
+                .switchIfEmpty(Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cuerpo de la petición no puede estar vacío")))
                 .map(body -> new UpdateProductStockCommand(productId, body.newStock())) 
-                .doOnNext(requestValidator::validate)
+                .flatMap(requestValidator::validate)
                 .flatMap(updateProductStockUseCase::updateProduct)
                 .flatMap(product -> ServerResponse.ok().bodyValue(product)); // 200 OK
     }
@@ -53,8 +56,9 @@ public class ProductHandler {
     public Mono<ServerResponse> updateProductName(ServerRequest request) {
         String id = request.pathVariable("id");
         return request.bodyToMono(UpdateNameCommand.class)
+                .switchIfEmpty(Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cuerpo de la petición no puede estar vacío")))
                 .map(body -> new UpdateNameCommand(id, body.name()))
-                .doOnNext(requestValidator::validate)
+                .flatMap(requestValidator::validate)
                 .flatMap(updateProductNameUseCase::updateProductName)
                 .flatMap(product -> ServerResponse.ok().bodyValue(product));
     }

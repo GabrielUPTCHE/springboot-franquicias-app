@@ -25,13 +25,11 @@ public class FranchiseService implements CreateFranchiseUseCase, UpdateFranchise
 
     @Override
     public Mono<Franchise> createFranchise(CreateFranchiseCommand command) {
-        return Mono.just(command)
-                .map(cmd ->{
-                                String newId = UUID.randomUUID().toString();
-                                return new Franchise(newId, cmd.name());
-                        }
-                    )
-                .flatMap(repositoryPort::save)
+        return Mono.defer(() -> {
+                    String newId = UUID.randomUUID().toString();
+                    Franchise newFranchise = new Franchise(newId, command.name());
+                    return repositoryPort.save(newFranchise);
+                })
                 .doOnSuccess(franchise -> log.info("Franquicia '{}' creada exitosamente con ID: {}", 
                         franchise.name(), franchise.id()))
                 .doOnError(error -> log.error("Fallo al crear la franquicia '{}'. Motivo: {}", 
@@ -41,10 +39,8 @@ public class FranchiseService implements CreateFranchiseUseCase, UpdateFranchise
     @Override
     public Mono<Franchise> updateFranchiseName(UpdateNameCommand command) {
         return repositoryPort.findById(command.id())
-                .switchIfEmpty(Mono.error(new FranchiseNotFoundException(command.id())))
-                .map(franchise -> {
-                    return new Franchise(franchise.id(), command.name());
-                })
+                .switchIfEmpty(Mono.error(() -> new FranchiseNotFoundException(command.id())))
+                .map(franchise -> new Franchise(franchise.id(), command.name()))
                 .flatMap(repositoryPort::save)
                 .doOnSuccess(franchise -> log.info("Franquicia '{}' se actualizo su nombre exitosamente con ID: {}", 
                         franchise.name(), franchise.id()))

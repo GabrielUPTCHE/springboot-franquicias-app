@@ -34,56 +34,39 @@ public class ProductService implements CreateProductUseCase, DeleteProductUseCas
     @Override
     public Mono<Product> createProduct(CreateProductCommand command) {
         return branchRepositoryPort.findById(command.branchId())
-                .switchIfEmpty(Mono.error(new BranchNotFoundException(command.branchId())))
-                .map(branch -> 
-                        {
-                                String newId = UUID.randomUUID().toString();
-                                return new Product(newId, command.name(), new Stock(command.stock()), branch.id().toString());
-                        }
-                )
+                .switchIfEmpty(Mono.error(() -> new BranchNotFoundException(command.branchId())))
+                .map(branch -> new Product(UUID.randomUUID().toString(), command.name(), new Stock(command.stock()), branch.id()))
                 .flatMap(productRepositoryPort::save)
-                .doOnSuccess(product -> log.info("Producto '{}' creada exitosamente con ID: {}", 
-                        product.name(), product.id()))
-                .doOnError(error -> log.error("Fallo al crear la Sucursal '{}'. Motivo: {}", 
-                        command.name(), error.getMessage()));
+                .doOnSuccess(product -> log.info("Producto '{}' creado exitosamente con ID: {}", product.name(), product.id()))
+                .doOnError(error -> log.error("Fallo al crear el Producto '{}'. Motivo: {}", command.name(), error.getMessage()));
     }
 
     @Override
     public Mono<Void> deleteProduct(String productId) {
         return productRepositoryPort.findById(productId)
-                .switchIfEmpty(Mono.error(new ProductNotFoundException(productId)))
+                .switchIfEmpty(Mono.error(() -> new ProductNotFoundException(productId)))
                 .flatMap(product -> productRepositoryPort.deleteById(product.id()))
-                .doOnSuccess(product -> log.info("Producto eliminada exitosamente con ID: {}", 
-                        productId))
-                .doOnError(error -> log.error("Fallo al eliminar el producto '{}'. Motivo: {}", 
-                        productId, error.getMessage()));
+                .doOnSuccess(unused -> log.info("Producto eliminado exitosamente con ID: {}", productId))
+                .doOnError(error -> log.error("Fallo al eliminar el producto '{}'. Motivo: {}", productId, error.getMessage()));
     }
 
     @Override
     public Mono<Product> updateProduct(UpdateProductStockCommand command) {
         return productRepositoryPort.findById(command.productId())
-                .switchIfEmpty(Mono.error(new ProductNotFoundException(command.productId())))
-                .map(product -> {
-                    return new Product(product.id(), product.name(), new Stock(command.newStock()), product.branchId());
-                })
+                .switchIfEmpty(Mono.error(() -> new ProductNotFoundException(command.productId())))
+                .map(product -> new Product(product.id(), product.name(), new Stock(command.newStock()), product.branchId()))
                 .flatMap(productRepositoryPort::save)
-                .doOnSuccess(product -> log.info("Stock de producto '{}' actualizado exitosamente con ID: {}", 
-                        product.name(), product.id()))
-                .doOnError(error -> log.error("Fallo al actualizar el producto '{}'. Motivo: {}", 
-                        command.productId(), error.getMessage()));
+                .doOnSuccess(product -> log.info("Stock de producto '{}' actualizado exitosamente con ID: {}", product.name(), product.id()))
+                .doOnError(error -> log.error("Fallo al actualizar el stock del producto '{}'. Motivo: {}", command.productId(), error.getMessage()));
     }
 
     @Override
     public Mono<Product> updateProductName(UpdateNameCommand command) {
         return productRepositoryPort.findById(command.id())
-                .switchIfEmpty(Mono.error(new ProductNotFoundException(command.id())))
-                .map(product -> {
-                    return new Product(product.id(), command.name(), product.stock(), product.branchId());
-                })
-                .doOnSuccess(product -> log.info("Nombre de producto '{}' actualizado exitosamente con ID: {}", 
-                        product.name(), product.id()))
-                .doOnError(error -> log.error("Fallo al actualizar el producto '{}'. Motivo: {}", 
-                        command.name(), error.getMessage()))
-                .flatMap(productRepositoryPort::save);
+                .switchIfEmpty(Mono.error(() -> new ProductNotFoundException(command.id())))
+                .map(product -> new Product(product.id(), command.name(), product.stock(), product.branchId()))
+                .flatMap(productRepositoryPort::save)
+                .doOnSuccess(product -> log.info("Nombre de producto '{}' actualizado exitosamente con ID: {}", product.name(), product.id()))
+                .doOnError(error -> log.error("Fallo al actualizar el nombre del producto '{}'. Motivo: {}", command.name(), error.getMessage()));
     }
 }
