@@ -1,4 +1,6 @@
+
 # API de Gestión de Franquicias (Spring WebFlux)
+
 
 ![Java](https://img.shields.io/badge/Java-17-orange.svg)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2+-brightgreen.svg)
@@ -6,7 +8,6 @@
 ![MongoDB](https://img.shields.io/badge/MongoDB-Reactive-green.svg)
 ![Docker](https://img.shields.io/badge/Docker-Multi--stage-blue.svg)
 
-Esta es una API RESTful reactiva construida para gestionar Franquicias, Sucursales y Productos. Permite realizar operaciones CRUD completas y consultas complejas (como obtener el producto con mayor stock por sucursal), garantizando un alto rendimiento mediante el uso de programación no bloqueante.
 
 ## Arquitectura y Patrones de Diseño
 
@@ -20,12 +21,13 @@ El proyecto está diseñado siguiendo los principios de la **Arquitectura Hexago
 
 ## Características Principales
 
-- **100% Reactivo:** Implementado con Project Reactor (Mono/Flux) de principio a fin.
-- **Validaciones:** Uso de `jakarta.validation` adaptado a WebFlux con un `GlobalExceptionHandler` unificado (RFC 7807).
-- **Consultas Optimizadas:** Resoluciones de agregación manejadas a través de composición reactiva en lugar de bloqueos de base de datos.
+- **Documentación Interactiva (Swagger):** Integración con OpenAPI 3 / Swagger UI para explorar, documentar y probar visualmente todas las rutas funcionales (RouterFunctions) de la API.
+- **Infraestructura como Código (IaC):** Gestión y aprovisionamiento automatizado del clúster de base de datos en **MongoDB Atlas** utilizando scripts de **Terraform**.
+- **Despliegue Cloud en AWS:** Contenedorización de la aplicación y despliegue en la nube de Amazon, utilizando **AWS ECR** (Elastic Container Registry) para almacenar la imagen Docker y **AWS App Runner** para la ejecución serverless del contenedor.
+- **100% Reactivo:** Implementado con Project Reactor (Mono/Flux) de principio a fin, evitando bloqueos de hilos (Non-blocking I/O).
+- **Validaciones Rigurosas:** Uso de `jakarta.validation` adaptado a WebFlux con un `GlobalExceptionHandler` unificado (RFC 7807).
 - **Cobertura de Pruebas:** Tests unitarios y de integración con `WebTestClient` y `Mockito`.
 - **Dockerizado:** Imagen construida mediante un *Multi-stage build* optimizado, ejecutándose en un entorno ligero (Alpine) con un usuario no-root por seguridad.
-
 ## Requisitos Previos
 
 - Java 17 o superior.
@@ -63,7 +65,10 @@ El proyecto está diseñado siguiendo los principios de la **Arquitectura Hexago
 
 ## Endpoints Principales
 
-La API base se encuentra en `http://localhost:8080/api/v1`.
+La API base en local se encuentra en `http://localhost:8080/api/v1`.
+
+La API base en AWS se encuentra en `https://39iu7kynf5.us-east-1.awsapprunner.com`.
+
 
 | Entidad | Método | Endpoint | Descripción |
 | :--- | :--- | :--- | :--- |

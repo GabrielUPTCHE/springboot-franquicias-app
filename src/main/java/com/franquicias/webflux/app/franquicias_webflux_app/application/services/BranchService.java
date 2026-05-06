@@ -1,6 +1,9 @@
 package com.franquicias.webflux.app.franquicias_webflux_app.application.services;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 
 import com.franquicias.webflux.app.franquicias_webflux_app.application.dto.command.CreateBranchCommand;
@@ -27,10 +30,11 @@ public class BranchService implements CreateBranchUseCase, UpdateBranchNameUseCa
         return franchiseRepositoryPort.findById(command.franchiseId())
                 // Si el Mono está vacío, lanzamos la excepción de dominio
                 .switchIfEmpty(Mono.error(new FranchiseNotFoundException(command.franchiseId())))
-                .map(franchise -> Branch.builder()
-                        .name(command.name())
-                        .franchiseId(franchise.getId())
-                        .build())
+                .map(franchise -> {
+                            String newId = UUID.randomUUID().toString();
+                            return new Branch( newId, command.name(), command.franchiseId());
+                        }
+                    )
                 .flatMap(branchRepositoryPort::save);
     }
 
@@ -39,8 +43,7 @@ public class BranchService implements CreateBranchUseCase, UpdateBranchNameUseCa
         return branchRepositoryPort.findById(command.id())
                 .switchIfEmpty(Mono.error(new BranchNotFoundException(command.id())))
                 .map(branch -> {
-                    branch.setName(command.name());
-                    return branch;
+                    return new Branch(branch.id(), command.name(), branch.franchiseId());
                 })
                 .flatMap(branchRepositoryPort::save);
     }

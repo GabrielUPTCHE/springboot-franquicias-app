@@ -53,7 +53,7 @@ class FranchiseHandlerTest {
     @Test
     void createFranchise_ShouldReturn201() {
         CreateFranchiseCommand command = new CreateFranchiseCommand("McDonalds");
-        Franchise franchise = Franchise.builder().id("999").name("McDonalds").build();
+        Franchise franchise = new Franchise("999", "McDonalds");
 
         doNothing().when(requestValidator).validate(any());
         when(createFranchiseUseCase.createFranchise(any(CreateFranchiseCommand.class))).thenReturn(Mono.just(franchise));
@@ -87,7 +87,7 @@ class FranchiseHandlerTest {
     @Test
     void updateFranchiseName_ShouldReturn200() {
         UpdateNameCommand command = new UpdateNameCommand("f1", "KFC Global");
-        Franchise updatedFranchise = Franchise.builder().id("f1").name("KFC Global").build();
+        Franchise updatedFranchise = new Franchise("f1" ,  "KFC Global");
 
         doNothing().when(requestValidator).validate(any());
         when(updateFranchiseNameUseCase.updateFranchiseName(any(UpdateNameCommand.class))).thenReturn(Mono.just(updatedFranchise));

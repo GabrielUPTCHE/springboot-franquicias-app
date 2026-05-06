@@ -28,26 +28,26 @@ class FranchiseServiceTest {
     @Test
     void execute_ShouldCreateAndReturnFranchise() {
         CreateFranchiseCommand command = new CreateFranchiseCommand("Starbucks");
-        Franchise expectedFranchise = Franchise.builder().id("123").name("Starbucks").build();
+        Franchise expectedFranchise = new Franchise("123", "Starbucks");
         when(repositoryPort.save(any(Franchise.class))).thenReturn(Mono.just(expectedFranchise));
         StepVerifier.create(franchiseService.createFranchise(command))
                 .expectNextMatches(franchise -> 
-                        franchise.getId().equals("123") && 
-                        franchise.getName().equals("Starbucks"))
+                        franchise.id().equals("123") && 
+                        franchise.name().equals("Starbucks"))
                 .verifyComplete();
     }
 
     @Test
     void execute_UpdateName_ShouldReturnUpdatedFranchise() {
         UpdateNameCommand command = new UpdateNameCommand("f1", "KFC Global");
-        Franchise existingFranchise = Franchise.builder().id("f1").name("KFC").build();
-        Franchise savedFranchise = Franchise.builder().id("f1").name("KFC Global").build();
+        Franchise existingFranchise = new Franchise("f1","KFC");
+        Franchise savedFranchise = new Franchise("f1", "KFC Global");
 
         when(repositoryPort.findById("f1")).thenReturn(Mono.just(existingFranchise));
         when(repositoryPort.save(any(Franchise.class))).thenReturn(Mono.just(savedFranchise));
 
         StepVerifier.create(franchiseService.updateFranchiseName(command))
-                .expectNextMatches(f -> f.getName().equals("KFC Global"))
+                .expectNextMatches(f -> f.name().equals("KFC Global"))
                 .verifyComplete();
     }
 }

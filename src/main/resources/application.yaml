@@ -1,11 +1,14 @@
 server:
   port: 8080
+  shutdown: graceful
 
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   application:
     name: franchise-api
   mongodb:
-    uri: mongodb+srv://admin_franquicias:SuperSecretPassword123@franquiciascluster.jdlb44h.mongodb.net/franquicias_db?retryWrites=true&w=majority
+    uri: mongodb+srv://admin_franquicias:contraseña_mongo_123@franquiciascluster.jdlb44h.mongodb.net/franquicias_db?retryWrites=true&w=majority
   data:
     mongodb:
       auto-index-creation: true

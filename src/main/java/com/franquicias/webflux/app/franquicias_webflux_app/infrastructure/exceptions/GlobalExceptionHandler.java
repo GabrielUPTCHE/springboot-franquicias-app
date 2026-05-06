@@ -27,12 +27,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ErrorResponse> handleDomainException(DomainException ex) {
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .status(HttpStatus.UNPROCESSABLE_ENTITY.value()) // 422 para reglas de negocio
+                .status(HttpStatus.UNPROCESSABLE_CONTENT.value()) 
                 .message(ex.getMessage())
                 .details(Collections.singletonList("Violación de regla de dominio"))
                 .timestamp(LocalDateTime.now())
                 .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNPROCESSABLE_CONTENT);
     }
 
     @ExceptionHandler(Exception.class)

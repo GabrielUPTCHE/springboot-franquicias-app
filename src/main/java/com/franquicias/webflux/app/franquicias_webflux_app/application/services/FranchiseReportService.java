@@ -34,15 +34,15 @@ public class FranchiseReportService implements GetMaxStockProductsUseCase {
                     return Mono.error(new FranchiseNotFoundException(franchiseId));
                 }))
                 // 2. Pasamos de Mono a Flux obteniendo sus sucursales
-                .flatMapMany(franchise -> branchRepositoryPort.findByFranchiseId(franchise.getId()))
+                .flatMapMany(franchise -> branchRepositoryPort.findByFranchiseId(franchise.id()))
                 // 3. Por cada sucursal, buscamos su producto top y mapeamos la respuesta
-                .flatMap(branch -> productRepositoryPort.findTopByBranchIdOrderByStockDesc(branch.getId())
+                .flatMap(branch -> productRepositoryPort.findTopByBranchIdOrderByStockDesc(branch.id())
                         .map(product -> new ProductMaxStockResponse(
-                                product.getId(),
-                                product.getName(),
-                                product.getStock().value(),
-                                branch.getId(),
-                                branch.getName()
+                                product.id(),
+                                product.name(),
+                                product.stock().value(),
+                                branch.id(),
+                                branch.name()
                         ))
                 )
                 .doOnComplete(() -> log.info("Reporte generado exitosamente para la franquicia ID: {}", franchiseId))

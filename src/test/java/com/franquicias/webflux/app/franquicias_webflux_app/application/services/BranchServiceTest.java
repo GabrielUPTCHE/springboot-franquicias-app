@@ -34,15 +34,15 @@ class BranchServiceTest {
     void execute_ShouldCreateBranch_WhenFranchiseExists() {
         // Arrange
         CreateBranchCommand command = new CreateBranchCommand("Sucursal Norte", "fran-1");
-        Franchise existingFranchise = Franchise.builder().id("fran-1").name("Burger King").build();
-        Branch expectedBranch = Branch.builder().id("branch-1").name("Sucursal Norte").franchiseId("fran-1").build();
+        Franchise existingFranchise =  new Franchise("fran-1", "Burger King");
+        Branch expectedBranch = new Branch("branch-1", "Sucursal Norte", "fran-1");
 
         when(franchiseRepositoryPort.findById("fran-1")).thenReturn(Mono.just(existingFranchise));
         when(branchRepositoryPort.save(any(Branch.class))).thenReturn(Mono.just(expectedBranch));
 
         // Act & Assert
         StepVerifier.create(branchService.createBranch(command))
-                .expectNextMatches(branch -> branch.getId().equals("branch-1") && branch.getName().equals("Sucursal Norte"))
+                .expectNextMatches(branch -> branch.id().equals("branch-1") && branch.name().equals("Sucursal Norte"))
                 .verifyComplete();
     }
 

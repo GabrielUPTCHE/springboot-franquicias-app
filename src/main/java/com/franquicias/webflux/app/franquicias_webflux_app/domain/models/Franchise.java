@@ -1,15 +1,5 @@
 package com.franquicias.webflux.app.franquicias_webflux_app.domain.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public record Franchise(String id, String name) {
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class Franchise {
-    private String id;
-    private String name;
 }

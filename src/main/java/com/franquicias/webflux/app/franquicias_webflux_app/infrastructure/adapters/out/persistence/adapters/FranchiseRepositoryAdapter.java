@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import com.franquicias.webflux.app.franquicias_webflux_app.application.ports.out.FranchiseRepositoryPort;
 import com.franquicias.webflux.app.franquicias_webflux_app.domain.models.Franchise;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.entities.FranchiseDocument;
+import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.mappers.FranchiseMapper;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.repositories.FranchiseReactiveMongoRepository;
 
 import reactor.core.publisher.Mono;
@@ -18,24 +19,20 @@ public class FranchiseRepositoryAdapter implements FranchiseRepositoryPort {
 
     @Override
     public Mono<Franchise> save(Franchise franchise) {
-        FranchiseDocument document = FranchiseDocument.builder()
-                .id(franchise.getId())
-                .name(franchise.getName())
-                .build();
+        FranchiseDocument document = FranchiseMapper.toEntity(franchise);
 
         return repository.save(document)
-                .map(savedDoc -> Franchise.builder()
-                        .id(savedDoc.getId())
-                        .name(savedDoc.getName())
-                        .build());
+                .map(savedDoc -> 
+                        FranchiseMapper.toDomain(savedDoc)
+                );
     }
 
     @Override
     public Mono<Franchise> findById(String id) {
         return repository.findById(id)
-                .map(findedDoc -> Franchise.builder()
-                        .id(findedDoc.getId())
-                        .name(findedDoc.getName())
-                        .build());
+                .map(findedDoc -> 
+                        FranchiseMapper.toDomain(findedDoc)
+        
+                );
     }
 }
