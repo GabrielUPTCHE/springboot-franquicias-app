@@ -31,3 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
+
+**/.terraform/
+
+# Ignorar archivos de estado local (¡Súper importante por seguridad!)
+*.tfstate
+*.tfstate.backup
+
+# Ignorar archivos de variables con credenciales sensibles (ej. tu MongoDB)
+*.tfvars
+*.tfvars.json
+
+# Ignorar planes de ejecución guardados
+*.tfplan
