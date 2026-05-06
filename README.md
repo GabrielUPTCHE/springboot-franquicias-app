@@ -22,12 +22,17 @@ El proyecto está diseñado siguiendo los principios de la **Arquitectura Hexago
 ## Características Principales
 
 - **Documentación Interactiva (Swagger):** Integración con OpenAPI 3 / Swagger UI para explorar, documentar y probar visualmente todas las rutas funcionales (RouterFunctions) de la API.
-- **Infraestructura como Código (IaC):** Gestión y aprovisionamiento automatizado del clúster de base de datos en **MongoDB Atlas** utilizando scripts de **Terraform**.
-- **Despliegue Cloud en AWS:** Contenedorización de la aplicación y despliegue en la nube de Amazon, utilizando **AWS ECR** (Elastic Container Registry) para almacenar la imagen Docker y **AWS App Runner** para la ejecución serverless del contenedor.
+- **Infraestructura como Código (IaC):** GCreación y gestión del clúster de base de datos en MongoDB Atlas y de los recursos de red/cómputo de AWS utilizando Terraform.
+- **Despliegue Cloud Escalable en AWS:** Contenedorización de la aplicación ejecutada en Amazon ECS (Fargate) balanceada a través de un Application Load Balancer (ALB), permitiendo escalabilidad horizontal sin gestión de servidores
 - **100% Reactivo:** Implementado con Project Reactor (Mono/Flux) de principio a fin, evitando bloqueos de hilos (Non-blocking I/O).
 - **Validaciones Rigurosas:** Uso de `jakarta.validation` adaptado a WebFlux con un `GlobalExceptionHandler` unificado (RFC 7807).
 - **Cobertura de Pruebas:** Tests unitarios y de integración con `WebTestClient` y `Mockito`.
 - **Dockerizado:** Imagen construida mediante un *Multi-stage build* optimizado, ejecutándose en un entorno ligero (Alpine) con un usuario no-root por seguridad.
+
+## Diagrama de despliegue
+
+![Diagrama de Despliegue en AWS](./docs/franquicias-despliegue.png)
+
 ## Requisitos Previos
 
 - Java 17 o superior.
@@ -67,7 +72,7 @@ El proyecto está diseñado siguiendo los principios de la **Arquitectura Hexago
 
 La API base en local se encuentra en `http://localhost:8080/api/v1`.
 
-La API base en AWS se encuentra en `https://39iu7kynf5.us-east-1.awsapprunner.com`.
+La API base en AWS (ALB) se encuentra en `http://franquicias-alb-2002530892.us-east-1.elb.amazonaws.com/api/v1`.
 
 
 | Entidad | Método | Endpoint | Descripción |

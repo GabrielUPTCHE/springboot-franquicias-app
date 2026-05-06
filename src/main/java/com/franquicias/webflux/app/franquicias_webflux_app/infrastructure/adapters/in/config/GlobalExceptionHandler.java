@@ -18,6 +18,7 @@ import com.franquicias.webflux.app.franquicias_webflux_app.domain.exceptions.Fra
 import com.franquicias.webflux.app.franquicias_webflux_app.domain.exceptions.InvalidStockException;
 import com.franquicias.webflux.app.franquicias_webflux_app.domain.exceptions.ProductNotFoundException;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.in.webflux.dto.ErrorResponse;
+import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.exceptions.CustomValidationException;
 
 import reactor.core.publisher.Mono;
 
@@ -52,9 +53,12 @@ public class GlobalExceptionHandler extends AbstractErrorWebExceptionHandler {
             
             status = HttpStatus.NOT_FOUND; // 404
             
-        } else if (error instanceof InvalidStockException || error instanceof IllegalArgumentException) {
+        } else if (error instanceof InvalidStockException || error instanceof IllegalArgumentException || error instanceof CustomValidationException) {
             
             status = HttpStatus.BAD_REQUEST; // 400
+            if (error instanceof CustomValidationException validationEx) {
+                errorMessage = validationEx.getMessage();
+            }
             
         } else if (error instanceof ResponseStatusException responseStatusException) {
             status = HttpStatus.valueOf(responseStatusException.getStatusCode().value());
