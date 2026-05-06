@@ -1,9 +1,11 @@
 package com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.in.webflux.handlers;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.franquicias.webflux.app.franquicias_webflux_app.application.dto.command.CreateFranchiseCommand;
 import com.franquicias.webflux.app.franquicias_webflux_app.application.dto.command.UpdateNameCommand;
@@ -26,11 +28,10 @@ public class FranchiseHandler {
 
     public Mono<ServerResponse> createFranchise(ServerRequest request) {
         return request.bodyToMono(CreateFranchiseCommand.class)
-                .doOnNext(requestValidator::validate)
+                .switchIfEmpty(Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cuerpo de la petición no puede estar vacío")))
+                .flatMap(requestValidator::validate)
                 .flatMap(createFranchiseUseCase::createFranchise)
-                .flatMap(franchise -> ServerResponse
-                        .status(HttpStatus.CREATED)
-                        .bodyValue(franchise));
+                .flatMap(franchise -> ServerResponse.status(HttpStatus.CREATED).bodyValue(franchise));
     }
 
     public Mono<ServerResponse> getMaxStockProducts(ServerRequest request) {
@@ -42,8 +43,9 @@ public class FranchiseHandler {
     public Mono<ServerResponse> updateFranchiseName(ServerRequest request) {
         String id = request.pathVariable("id");
         return request.bodyToMono(UpdateNameCommand.class)
+                .switchIfEmpty(Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cuerpo de la petición no puede estar vacío")))
                 .map(body -> new UpdateNameCommand(id, body.name()))
-                .doOnNext(requestValidator::validate)
+                .flatMap(requestValidator::validate)
                 .flatMap(updateFranchiseNameUseCase::updateFranchiseName)
                 .flatMap(franchise -> ServerResponse.ok().bodyValue(franchise));
     }

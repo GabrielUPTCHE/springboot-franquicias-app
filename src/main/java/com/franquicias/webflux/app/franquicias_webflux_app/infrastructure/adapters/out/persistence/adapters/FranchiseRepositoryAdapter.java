@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 
 import com.franquicias.webflux.app.franquicias_webflux_app.application.ports.out.FranchiseRepositoryPort;
 import com.franquicias.webflux.app.franquicias_webflux_app.domain.models.Franchise;
-import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.entities.FranchiseDocument;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.mappers.FranchiseMapper;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.repositories.FranchiseReactiveMongoRepository;
 
@@ -19,20 +18,15 @@ public class FranchiseRepositoryAdapter implements FranchiseRepositoryPort {
 
     @Override
     public Mono<Franchise> save(Franchise franchise) {
-        FranchiseDocument document = FranchiseMapper.toEntity(franchise);
-
-        return repository.save(document)
-                .map(savedDoc -> 
-                        FranchiseMapper.toDomain(savedDoc)
-                );
+        return Mono.just(franchise)
+                .map(FranchiseMapper::toEntity)
+                .flatMap(repository::save)
+                .map(FranchiseMapper::toDomain); 
     }
 
     @Override
     public Mono<Franchise> findById(String id) {
         return repository.findById(id)
-                .map(findedDoc -> 
-                        FranchiseMapper.toDomain(findedDoc)
-        
-                );
+                .map(FranchiseMapper::toDomain);
     }
 }

@@ -28,8 +28,7 @@ public class BranchService implements CreateBranchUseCase, UpdateBranchNameUseCa
     @Override
     public Mono<Branch> createBranch(CreateBranchCommand command) {
         return franchiseRepositoryPort.findById(command.franchiseId())
-                // Si el Mono está vacío, lanzamos la excepción de dominio
-                .switchIfEmpty(Mono.error(new FranchiseNotFoundException(command.franchiseId())))
+                .switchIfEmpty(Mono.error(() -> new FranchiseNotFoundException(command.franchiseId())))
                 .map(franchise -> {
                             String newId = UUID.randomUUID().toString();
                             return new Branch( newId, command.name(), command.franchiseId());
@@ -41,7 +40,7 @@ public class BranchService implements CreateBranchUseCase, UpdateBranchNameUseCa
     @Override
     public Mono<Branch> updateBranchName(UpdateNameCommand command) {
         return branchRepositoryPort.findById(command.id())
-                .switchIfEmpty(Mono.error(new BranchNotFoundException(command.id())))
+                .switchIfEmpty(Mono.error(() -> new BranchNotFoundException(command.id())))
                 .map(branch -> {
                     return new Branch(branch.id(), command.name(), branch.franchiseId());
                 })
