@@ -5,8 +5,6 @@ import org.springframework.stereotype.Component;
 
 import com.franquicias.webflux.app.franquicias_webflux_app.application.ports.out.ProductRepositoryPort;
 import com.franquicias.webflux.app.franquicias_webflux_app.domain.models.Product;
-import com.franquicias.webflux.app.franquicias_webflux_app.domain.valueobjects.Stock;
-import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.entities.ProductDocument;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.mappers.ProductMapper;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.repositories.ProductReactiveMongoRepository;
 
@@ -20,25 +18,26 @@ public class ProductPersistenceAdapter implements ProductRepositoryPort {
 
     @Override
     public Mono<Product> save(Product product) {
-        ProductDocument document = ProductMapper.toEntity(product);
-
-        return repository.save(document)
-                .map(saved -> ProductMapper.toDomain(document));
+        return Mono.just(product)
+                .map(ProductMapper::toEntity)
+                .flatMap(repository::save)
+                .map(ProductMapper::toDomain); 
     }
 
     @Override
     public Mono<Product> findById(String id) {
         return repository.findById(id)
-                .map(doc -> ProductMapper.toDomain(doc));
+                .map(ProductMapper::toDomain);
     }
 
     @Override
     public Mono<Void> deleteById(String id) {
         return repository.deleteById(id);
     }
+    
     @Override
     public Mono<Product> findTopByBranchIdOrderByStockDesc(String branchId) {
         return repository.findFirstByBranchIdOrderByStockDesc(branchId)
-                .map(doc -> ProductMapper.toDomain(doc));
+                .map(ProductMapper::toDomain);
     }
 }
