@@ -1,5 +1,6 @@
 package com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.adapters;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,7 +11,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.franquicias.webflux.app.franquicias_webflux_app.domain.models.Branch;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.entities.BranchDocument;
 import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.adapters.out.persistence.nosql.repositories.BranchReactiveMongoRepository;
+import com.franquicias.webflux.app.franquicias_webflux_app.infrastructure.config.ConfigValues;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -21,6 +25,7 @@ import reactor.util.context.Context;
 import java.time.Duration;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,8 +34,17 @@ class BranchRepositoryAdapterTest {
     @Mock
     private BranchReactiveMongoRepository repository;
 
-    @InjectMocks
     private BranchRepositoryAdapter adapter;
+
+    @Mock 
+    private CircuitBreakerRegistry registry;
+
+    @BeforeEach
+    void setUp() {
+        CircuitBreaker dummyCb = CircuitBreaker.ofDefaults("mongoReadCb");
+        when(registry.circuitBreaker(anyString())).thenReturn(dummyCb);
+        adapter = new BranchRepositoryAdapter(repository, registry);
+    }
 
     @Test
     @DisplayName("Debe guardar la sucursal asegurando la suscripción y propagando el Context")
@@ -55,21 +69,29 @@ class BranchRepositoryAdapterTest {
     }
 
     @Test
-    @DisplayName("Debe buscar por ID simulando latencia de BD con Virtual Time")
-    void findById_ShouldReturnBranch_UsingVirtualTime() {
+    @DisplayName("Debe buscar por ID exitosamente antes del timeout")
+    void findById_ShouldReturnBranch() {
         BranchDocument document = BranchDocument.builder()
                 .id("b1")
                 .name("Sucursal Norte")
                 .franchiseId("f1")
                 .build();
 
-        when(repository.findById("b1")).thenReturn(Mono.just(document).delayElement(Duration.ofSeconds(2)));
+        when(repository.findById("b1")).thenReturn(Mono.just(document));
+        StepVerifier.create(adapter.findById("b1"))
+                .expectNextMatches(branch -> branch.name().equals("Sucursal Norte"))
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Debe aplicar fallback (Mono.empty) si la BD supera el tiempo de espera configurado")
+    void findById_ShouldReturnEmpty_WhenTimeoutOccurs() {
+        when(repository.findById("b1")).thenReturn(Mono.never());
 
         StepVerifier.withVirtualTime(() -> adapter.findById("b1"))
                 .expectSubscription()
-                .thenAwait(Duration.ofSeconds(2))
-                .expectNextMatches(branch -> branch.name().equals("Sucursal Norte"))
-                .verifyComplete();
+                .expectNoEvent(Duration.ofSeconds(ConfigValues.RETRY_READ_SECONDS))
+                .verifyComplete(); 
     }
 
     @Test

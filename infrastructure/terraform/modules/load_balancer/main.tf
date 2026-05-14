@@ -1,7 +1,7 @@
 # LOAD BALANCER 
 resource "aws_lb" "main" {
   name               = "franquicias-alb"
-  internal           = false 
+  internal           = false
   load_balancer_type = "application"
   security_groups    = [var.alb_sg_id]
   subnets            = var.public_subnets
@@ -14,10 +14,10 @@ resource "aws_lb" "main" {
 # TARGET GROUP 
 resource "aws_lb_target_group" "fargate_tg" {
   name        = "franquicias-tg"
-  port        = 8080 
+  port        = 8080
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
-  target_type = "ip" 
+  target_type = "ip"
 
   health_check {
     path                = "/actuator/health"
@@ -25,7 +25,7 @@ resource "aws_lb_target_group" "fargate_tg" {
     unhealthy_threshold = 2
     timeout             = 5
     interval            = 30
-    matcher             = "200" 
+    matcher             = "200"
   }
 }
 

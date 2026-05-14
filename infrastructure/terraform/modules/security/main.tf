@@ -1,7 +1,7 @@
 # CLOUDWATCH LOGS 
 resource "aws_cloudwatch_log_group" "fargate_logs" {
   name              = "/ecs/franquicias-webflux"
-  retention_in_days = 7 
+  retention_in_days = 7
 }
 
 # SECURITY GROUPS
@@ -33,11 +33,11 @@ resource "aws_security_group" "fargate_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port       = 8080 
-    to_port         = 8080
-    protocol        = "tcp"
+    from_port = 8080
+    to_port   = 8080
+    protocol  = "tcp"
 
-    security_groups = [aws_security_group.alb_sg.id] 
+    security_groups = [aws_security_group.alb_sg.id]
   }
 
   egress {
