@@ -44,7 +44,7 @@ module "security" {
 
 module "load_balancer" {
   source = "./modules/load_balancer"
-  
+
   vpc_id         = module.networking.vpc_id
   public_subnets = module.networking.public_subnets
   alb_sg_id      = module.security.alb_sg_id
@@ -71,6 +71,6 @@ module "compute" {
   target_group_arn   = module.load_balancer.target_group_arn
   execution_role_arn = module.security.execution_role_arn
   log_group_name     = module.security.log_group_name
-  
-  image_url          = "${module.ecr.repository_url}:latest"
+
+  image_url = "${module.ecr.repository_url}:latest"
 }
